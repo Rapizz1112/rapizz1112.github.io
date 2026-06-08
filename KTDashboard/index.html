@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ads Intelligence Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">MI</div>
+          <div>
+            <strong>Marketing Intel</strong>
+            <span>Ads Intelligence</span>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button class="nav-item active" type="button" data-view="dashboard">Dashboard</button>
+          <button class="nav-item" type="button" data-view="content">Content Database</button>
+          <button class="nav-item" type="button" data-view="files">Manage Files</button>
+        </nav>
+
+        <div class="upload-card">
+          <label for="csvFile" class="file-drop">
+            <span>Import CSV</span>
+            <small>ลากไฟล์หรือเลือกไฟล์ Ads CSV</small>
+          </label>
+          <input id="csvFile" type="file" accept=".csv,text/csv" multiple />
+          <button id="loadSample" class="ghost-button" type="button">โหลด CSV ในโฟลเดอร์นี้</button>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Content Database</p>
+            <h1>Ads Dashboard</h1>
+          </div>
+          <div class="top-actions">
+            <label class="top-import">
+              <span>Import CSV</span>
+              <input id="csvFileTop" type="file" accept=".csv,text/csv" multiple />
+            </label>
+            <button id="loadSampleTop" class="ghost-button compact" type="button">โหลด CSV ตัวอย่าง</button>
+            <label class="date-field">
+              <span>จาก</span>
+              <input id="dateFrom" type="date" />
+            </label>
+            <label class="date-field">
+              <span>ถึง</span>
+              <input id="dateTo" type="date" />
+            </label>
+            <button id="exportCsv" class="primary-button" type="button">Export</button>
+          </div>
+        </header>
+
+        <section class="toolbar">
+          <label class="search-box">
+            <span>ค้นหา</span>
+            <input id="searchInput" type="search" placeholder="ชื่อโฆษณา / ad set / objective..." />
+          </label>
+          <label>
+            <span>มุมมอง</span>
+            <select id="groupBy">
+              <option value="ad">Ad name</option>
+              <option value="adset">Ad set</option>
+              <option value="month">Month</option>
+            </select>
+          </label>
+          <label>
+            <span>Delivery</span>
+            <select id="deliveryFilter">
+              <option value="all">ทั้งหมด</option>
+            </select>
+          </label>
+          <label>
+            <span>Sort</span>
+            <select id="sortBy">
+              <option value="spend">Spend มากสุด</option>
+              <option value="totalRoas">Total ROAS มากสุด</option>
+              <option value="purchases">Purchases มากสุด</option>
+              <option value="messages">Messages มากสุด</option>
+              <option value="reach">Reach มากสุด</option>
+              <option value="cpr">Cost / Result ต่ำสุด</option>
+              <option value="cpmessaging">Cost / Msg ต่ำสุด</option>
+              <option value="cpm">CPM ต่ำสุด</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="kpi-grid" id="kpiGrid"></section>
+
+        <section class="dashboard-overview" data-view-panel="dashboard">
+          <div class="panel hero-metrics">
+            <div class="panel-head">
+              <div>
+                <h2>Dashboard Overview</h2>
+                <p>ภาพรวมจากข้อมูลที่ import และค่าที่กรอกเพิ่ม</p>
+              </div>
+            </div>
+            <div class="overview-grid">
+              <div class="overview-stat">
+                <span>Total Value</span>
+                <strong id="overviewValue">฿0</strong>
+                <small id="overviewValueNote">FB + Line</small>
+              </div>
+              <div class="overview-stat">
+                <span>Total ROAS</span>
+                <strong id="overviewRoas">0.00</strong>
+                <small>รวมทุกคอนเทนต์</small>
+              </div>
+              <div class="overview-stat">
+                <span>SUPER Contents</span>
+                <strong id="overviewSuper">0</strong>
+                <small>Cost/New Msg < 400 และ ROAS รวม >= 2</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-chart-grid">
+            <div class="panel">
+              <div class="panel-head">
+                <h2>Value Mix</h2>
+              </div>
+              <canvas id="valueDonut" width="420" height="300"></canvas>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h2>Funnel Spend</h2>
+              </div>
+              <canvas id="funnelBar" width="520" height="300"></canvas>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h2>Monthly Value</h2>
+              </div>
+              <canvas id="monthlyBar" width="520" height="300"></canvas>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h2>Performance Split</h2>
+              </div>
+              <canvas id="performanceDonut" width="420" height="300"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="analysis-grid" data-view-panel="content">
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <div>
+                <h2>Performance Trend</h2>
+                <p id="trendSubtitle">ใช้ข้อมูลที่ import เพื่อแสดง spend, value และ ROAS</p>
+              </div>
+              <div class="legend">
+                <span class="dot spend"></span>Spend
+                <span class="dot revenue"></span>Value
+                <span class="dot roas"></span>ROAS
+              </div>
+              <div class="trend-tabs" aria-label="Trend granularity">
+                <button class="trend-tab active" type="button" data-trend-mode="day">Daily</button>
+                <button class="trend-tab" type="button" data-trend-mode="week">Weekly</button>
+                <button class="trend-tab" type="button" data-trend-mode="month">Monthly</button>
+              </div>
+            </div>
+            <canvas id="trendChart" width="900" height="320"></canvas>
+          </div>
+
+          <div class="panel insights-panel">
+            <div class="panel-head">
+              <h2>AI-style Insights</h2>
+              <div class="insight-tabs" aria-label="Insight category">
+                <button class="insight-tab active" type="button" data-insight-mode="roas">ROAS</button>
+                <button class="insight-tab" type="button" data-insight-mode="spend">Spend</button>
+                <button class="insight-tab" type="button" data-insight-mode="messages">Msg</button>
+                <button class="insight-tab" type="button" data-insight-mode="purchases">Purchase</button>
+                <button class="insight-tab" type="button" data-insight-mode="engage">Engage</button>
+                <button class="insight-tab" type="button" data-insight-mode="cost">Cost</button>
+              </div>
+            </div>
+            <div id="insights" class="insight-list"></div>
+          </div>
+        </section>
+
+        <section class="content-grid" data-view-panel="content">
+          <aside class="panel detail-panel">
+            <div class="panel-head">
+              <h2>Selected Content</h2>
+            </div>
+            <div id="detailContent" class="detail-empty">เลือกแถวในตารางเพื่อดูรายละเอียด</div>
+          </aside>
+
+          <div class="panel table-panel">
+            <div class="panel-head">
+              <div>
+                <h2>Content Database</h2>
+                <p id="rowCount">รอ import ข้อมูล</p>
+              </div>
+              <div class="pager">
+                <button id="prevPage" type="button">ก่อนหน้า</button>
+                <span id="pageLabel">1 / 1</span>
+                <button id="nextPage" type="button">ถัดไป</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-sort="name">Post Name</th>
+                    <th data-sort="type">Type</th>
+                    <th data-sort="market">Market</th>
+                    <th data-sort="funnel">Funnel</th>
+                    <th data-sort="product">Product</th>
+                    <th data-sort="objective">Obj.</th>
+                    <th data-sort="month">Month</th>
+                    <th data-sort="date">Publish</th>
+                    <th data-sort="spend">Spent</th>
+                    <th data-sort="reach">Reach</th>
+                    <th data-sort="contacts">New Msg</th>
+                    <th data-sort="costNewMsg">Cost/New Msg</th>
+                    <th data-sort="messages">MSG</th>
+                    <th data-sort="cpmessaging">Cost/MSG</th>
+                    <th data-sort="purchases">Purchase</th>
+                    <th data-sort="value">Purchase Conversion Value</th>
+                    <th data-sort="totalRoas">ROAS</th>
+                    <th data-sort="conversionRate">Conversion Rate %</th>
+                    <th data-sort="linePurchases">ยอดปิด Line</th>
+                    <th data-sort="lineValue">ยอดรวม</th>
+                    <th data-sort="totalRoas">ROAS รวม</th>
+                    <th>SUPER</th>
+                    <th>Views</th>
+                    <th>Interactions + Link clicks</th>
+                    <th>% Engage</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <section class="files-panel" data-view-panel="files" hidden>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>Manage Files</h2>
+                <p>ไฟล์ CSV ที่บันทึกไว้ใน browser นี้</p>
+              </div>
+              <button id="clearFiles" class="ghost-button compact" type="button">ลบไฟล์ทั้งหมด</button>
+            </div>
+            <div id="fileList" class="file-list"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <template id="emptyStateTemplate">
+      <tr>
+        <td colspan="25" class="empty-state">Import CSV เพื่อเริ่มดู dashboard</td>
+      </tr>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
